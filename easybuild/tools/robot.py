@@ -248,7 +248,7 @@ def dry_run(easyconfigs, modtool, short=False):
         all_specs = resolve_dependencies(easyconfigs, modtool, retain_all_deps=True, raise_error_missing_ecs=False)
 
     unbuilt_specs = skip_available(all_specs, modtool)
-    dry_run_fmt = " * [%1s] %s (module: %s)"  # markdown compatible (list of items with checkboxes in front)
+    dry_run_fmt = " %s [%1s] %s (module: %s)"  # markdown compatible (list of items with checkboxes in front)
 
     listed_ec_paths = [spec['spec'] for spec in easyconfigs]
 
@@ -278,7 +278,15 @@ def dry_run(easyconfigs, modtool, short=False):
         else:
             item = spec['spec']
 
-        lines.append(dry_run_fmt % (ans, item, mod))
+        depstat = spec['depstat']
+        if depstat == 'B':
+            mchar = build_option('dry_run_builddependencies_char')
+        elif depstat == 'D':
+            mchar = build_option('dry_run_dependencies_char')
+        else:
+            mchar = '*'
+
+        lines.append(dry_run_fmt % (mchar, ans, item, mod))
 
     if short:
         # insert after 'Dry run:' message
@@ -349,6 +357,7 @@ def resolve_dependencies(easyconfigs, modtool, retain_all_deps=False, raise_erro
     ordered_ecs = []
     # all available modules can be used for resolving dependencies except those that will be installed
     being_installed = [p['full_mod_name'] for p in easyconfigs]
+    cmd_dep = being_installed
     avail_modules = [m for m in avail_modules if m not in being_installed]
 
     _log.debug('easyconfigs before resolving deps: %s', easyconfigs)
@@ -467,6 +476,28 @@ def resolve_dependencies(easyconfigs, modtool, retain_all_deps=False, raise_erro
             _log.warning("No easyconfig files found for: %s", missing_easyconfigs)
 
     _log.info("Dependency resolution complete, building as follows: %s", ordered_ecs)
+
+    # get dependency status;
+    # - 'C': mentioned on the Command line, input to this function
+    # - 'D': full Dependency, or Dependency of Dependency
+    # - 'B': Builddependency, or dependency of Builddependency
+    ordered_dep = set()
+    i = len(ordered_ecs)
+    while i > 0:
+        i -= 1
+        ec = ordered_ecs[i]
+        fmn = ec['full_mod_name']
+        depstat = 'B'
+        if fmn in cmd_dep:
+            depstat = 'C'
+        elif fmn in ordered_dep:
+            depstat = 'D'
+        ec['depstat'] = depstat
+        if depstat != 'B':
+            rdep = ec['resolved_dependencies']
+            bdep = [x['full_mod_name'] for x in ec['builddependencies']]
+            ordered_dep.update([x for x in rdep if not x in bdep])
+
     return ordered_ecs
 
 
