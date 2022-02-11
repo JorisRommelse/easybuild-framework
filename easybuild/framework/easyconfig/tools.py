@@ -156,7 +156,8 @@ def find_resolved_modules(easyconfigs, avail_modules, modtool, retain_all_deps=F
                 isresolved = False
 
             if isresolved:
-                resolved_deps.append(dep['full_mod_name'])
+                if 'full_mod_name' in dep:
+                    resolved_deps.append(dep['full_mod_name'])
             else:
                 deps.append(dep)
 
