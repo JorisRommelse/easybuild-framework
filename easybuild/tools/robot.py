@@ -496,11 +496,12 @@ def resolve_dependencies(easyconfigs, modtool, retain_all_deps=False, raise_erro
         if depstat != 'B':
             rdep = ec['resolved_dependencies']
             bdep = []
-            for d in ec['builddependencies']:
-                if isinstance(d, list):
-                    bdep += [x['full_mod_name'] for x in d]
-                else:
-                    bdep.append(d['full_mod_name'])
+            if 'builddependencies' in ec:
+                for d in ec['builddependencies']:
+                    if isinstance(d, list):
+                        bdep += [x['full_mod_name'] for x in d]
+                    else:
+                        bdep.append(d['full_mod_name'])
             ordered_dep.update([x for x in rdep if x not in bdep])
 
     return ordered_ecs
