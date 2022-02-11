@@ -496,7 +496,7 @@ def resolve_dependencies(easyconfigs, modtool, retain_all_deps=False, raise_erro
         if depstat != 'B':
             rdep = ec['resolved_dependencies']
             bdep = [x['full_mod_name'] for x in ec['builddependencies']]
-            ordered_dep.update([x for x in rdep if not x in bdep])
+            ordered_dep.update([x for x in rdep if x not in bdep])
 
     return ordered_ecs
 
