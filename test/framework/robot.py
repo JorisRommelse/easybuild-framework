@@ -1004,6 +1004,7 @@ class RobotTest(EnhancedTestCase):
             'versionsuffix': '',
             'toolchain': {'name': 'system', 'version': 'system'},
             'dependencies': [],
+            'resolved_dependencies': [],
             'full_mod_name': 'nodeps/1.2.3',
             'spec': 'nodeps-1.2.3.eb',
             'hidden': False,
